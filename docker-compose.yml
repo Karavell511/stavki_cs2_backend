@@ -1,0 +1,33 @@
+services:
+  api:
+    build: .
+    container_name: stavki_api
+    env_file: .env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+  db:
+    image: postgres:16
+    container_name: stavki_db
+    environment:
+      POSTGRES_DB: stavki
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d stavki"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+  redis:
+    image: redis:7
+    container_name: stavki_redis
+    ports:
+      - "6379:6379"
